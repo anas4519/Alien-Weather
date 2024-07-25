@@ -3,6 +3,7 @@ import 'package:lottie/lottie.dart';
 import 'package:weather_app/animations/cloudy_weather.dart';
 import 'package:weather_app/animations/sunny_weather.dart';
 import 'package:weather_app/models/weather.dart';
+import 'package:weather_app/screens/saved_cities.dart';
 import 'package:weather_app/services/weather_service.dart';
 import 'package:weather_app/utils/colors.dart';
 import 'package:weather_app/widgets/info_column.dart';
@@ -56,6 +57,9 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('Alien Weather', style: TextStyle(fontSize: 18),),
         centerTitle: true,
+        leading: IconButton(onPressed: (){
+          Navigator.of(context).push(MaterialPageRoute(builder: (ctx)=> const SavedCities()));
+        }, icon: Icon(Icons.public, color: AppColors.primary,))
       ),
       body: isLoading
           ? Center(
@@ -68,10 +72,13 @@ class _HomeScreenState extends State<HomeScreen> {
             ))
           : weather == null
               ? Center(
-                  child: Text(
-                    'Failed to load weather data',
-                    style: TextStyle(color: AppColors.grey, fontSize: 18),
+                  child: Lottie.asset('assets/animations/404.json',
+                  height: 250
                   ),
+                  // child: Text(
+                  //   'Failed to load weather data',
+                  //   style: TextStyle(color: AppColors.grey, fontSize: 18),
+                  // ),
                 )
               : SingleChildScrollView(
                   child: Padding(

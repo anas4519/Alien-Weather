@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:weather_app/animations/cloudy_weather.dart';
 import 'package:weather_app/animations/rainy_weather.dart';
 import 'package:weather_app/animations/sunny_weather.dart';
@@ -46,6 +47,30 @@ class _SearchedWeatherScreenState extends State<SearchedWeatherScreen> {
     }
   }
 
+  Future<void> addToFavorites(String cityName) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String>? favoriteCities = prefs.getStringList('favoriteCities');
+    favoriteCities ??= [];
+    if (!favoriteCities.contains(cityName)) {
+      favoriteCities.add(cityName);
+      await prefs.setStringList('favoriteCities', favoriteCities);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: AppColors.primary,
+          
+          content: Text('$cityName added to favorites', style: TextStyle(color: AppColors.grey),),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: AppColors.primary,
+          content: Text('$cityName is already in favorites', style: TextStyle(color: AppColors.grey)),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final WeatherData? weather = weatherInfo;
@@ -57,7 +82,29 @@ class _SearchedWeatherScreenState extends State<SearchedWeatherScreen> {
       appBar: AppBar(
         title: const Text('Alien Weather', style: TextStyle(fontSize: 18)),
         centerTitle: true,
-        leading: IconButton(onPressed: Navigator.of(context).pop, icon: Icon(Icons.arrow_back, color: AppColors.primary,)),
+        leading: Padding(
+          padding: EdgeInsets.only(left: screenWidth * 0.01),
+          child: IconButton(
+              onPressed: Navigator.of(context).pop,
+              icon: Icon(
+                Icons.arrow_back_ios,
+                color: AppColors.primary,
+                size: 18,
+              )),
+        ),
+        actions: [
+          Padding(
+            padding: EdgeInsets.only(right: screenWidth * 0.01),
+            child: IconButton(
+                onPressed: () {
+                  addToFavorites(widget.cityName);
+                },
+                icon: Icon(
+                  Icons.add,
+                  color: AppColors.primary,
+                )),
+          )
+        ],
       ),
       body: isLoading
           ? Center(
@@ -65,16 +112,13 @@ class _SearchedWeatherScreenState extends State<SearchedWeatherScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Lottie.asset('assets/animations/loading.json', height: 50),
-                Text('Loading...')
+                const Text('Loading...')
               ],
             ))
           : weather == null
               ? Center(
-                  child: Text(
-                    'Failed to load weather data',
-                    style: TextStyle(color: AppColors.grey, fontSize: 18),
-                  ),
-                )
+                  child:
+                      Lottie.asset('assets/animations/404.json', height: 250))
               : SingleChildScrollView(
                   child: Padding(
                     padding: EdgeInsets.all(screenWidth * 0.02),
@@ -153,9 +197,11 @@ class _SearchedWeatherScreenState extends State<SearchedWeatherScreen> {
                                       Text(
                                         "It's clear outside, look for UFO's",
                                         style: TextStyle(
-                                            color: AppColors.grey, fontSize: 18),
+                                            color: AppColors.grey,
+                                            fontSize: 18),
                                       ),
-                                      Lottie.asset('assets/animations/ufo.json', height: 60)
+                                      Lottie.asset('assets/animations/ufo.json',
+                                          height: 60)
                                     ],
                                   ),
                                 ],
